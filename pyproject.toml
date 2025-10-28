@@ -9,3 +9,75 @@ dependencies = [
     "fastapi[standard]>=0.120.0",
     "psycopg2-binary>=2.9.11",
 ]
+
+[dependency-groups]
+dev = [
+    "poethepoet>=0.37.0",
+    "prek>=0.2.11",
+    "ruff>=0.14.2",
+]
+
+
+[tool.ruff]
+src = ["src"]
+target-version = "py313"
+include = ["src/**/*.py"]
+fix = true
+line-length = 100
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+select = ["ALL"]
+ignore = [
+    "ARG001", # Unused function argument: {name}
+    "ARG002", #	unused-method-argument	Unused method argument: {name}
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "TRY003", # Avoid specifying long messages outside the exception class
+    "TRY400", # Use logging.exception instead of logging.error
+    "N818",   # Exception name should be named with an Error suffix
+    "ISC001", # Implicit string concatenation
+    "S303",   # Use of insecure MD2, MD4, MD5, or SHA1 hash function
+    "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "D",      # Missing docstrings
+    "EM101",  # Exception must not use a string literal, assign to variable first
+    "RUF001", # String contains ambiguous {}. Did you mean {}?
+    "RUF002", # Docstring contains ambiguous {}. Did you mean {}?
+    "RUF003", # Comment contains ambiguous {}. Did you mean {}?
+    "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
+    "UP040",  # Type alias {name} uses {type_alias_method} instead of the type keyword
+    "PD901",  # Avoid using the generic variable name df for DataFrames
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/*.py" = [
+   "INP001",  # is part of an implicit namespace package
+   "PLC0415", # import should be at the top-level of a file
+]
+
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"typing.Set".msg = "Use set[] instead."
+"typing.List".msg = "Use list[] instead."
+"typing.Dict".msg = "Use dict[] instead."
+"typing.Optional".msg = "Use | None instead."
+"typing.Type".msg = "Use type[] instead."
+"typing.Union".msg = "Use | instead."
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+
+
+
+[tool.poe.tasks]
+lint = { cmd = "uv run prek run --all-files", help = "Run linting through pre-commit" }
+run_server = { cmd = "uv run fastapi run main.py --port 8000", help = "Run application server" }
+make_migration = { cmd = "uv run alembic revision --autogenerate -m" }
