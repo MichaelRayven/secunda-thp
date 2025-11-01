@@ -12,7 +12,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    build: ./Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - postgres
     environment:
