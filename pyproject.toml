@@ -46,6 +46,7 @@ ignore = [
     "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
     "UP040",  # Type alias {name} uses {type_alias_method} instead of the type keyword
     "PD901",  # Avoid using the generic variable name df for DataFrames
+    "ANN201"  # Missing return type annotation for public function
 ]
 
 [tool.ruff.lint.pydocstyle]
