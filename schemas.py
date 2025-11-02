@@ -1,6 +1,9 @@
 from typing import Annotated, Any
 
+from geoalchemy2 import WKBElement
+from geoalchemy2.shape import to_shape
 from pydantic import BaseModel, BeforeValidator, ConfigDict
+from shapely.geometry.base import BaseGeometry
 
 
 def stringify_phone(value: Any):
@@ -18,6 +21,19 @@ def validate_phones(value: Any):
         return [stringify_phone(phone) for phone in value]
 
     return [stringify_phone(value)]
+
+
+def wkb_to_shape(wkb: WKBElement | BaseGeometry) -> BaseGeometry | None:
+    if isinstance(wkb, WKBElement):
+        return to_shape(wkb)
+
+    return wkb
+
+
+def dump_geom(value: Any) -> dict:
+    if isinstance(value, dict):
+        return value
+    return getattr(wkb_to_shape(value), '__geo_interface__', None)
 
 
 class OrganizationCreate(BaseModel):
@@ -39,8 +55,7 @@ class BuildingOutNested(BaseModel):
 
     id: int
     address: str
-    latitude: float
-    longitude: float
+    geolocation: Annotated[dict, BeforeValidator(dump_geom)]
 
 
 class ActivityOutNested(BaseModel):
@@ -72,8 +87,7 @@ class BulidingOut(BaseModel):
 
     id: int
     address: str
-    latitude: float
-    longitude: float
+    geolocation: Annotated[dict, BeforeValidator(dump_geom)]
     organizations: list['OrganizationOutNested'] = []
 
 
