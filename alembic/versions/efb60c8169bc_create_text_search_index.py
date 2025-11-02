@@ -22,10 +22,22 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.execute('CREATE EXTENSION IF NOT EXISTS pg_trgm')
-    op.execute('CREATE INDEX organizations_trgm_idx ON organizations USING GIN (name gin_trgm_ops)')
+    op.create_index(
+        op.f('organizations_trgm_idx'),
+        'organizations',
+        ['name'],
+        unique=False,
+        postgresql_ops={'name': 'gin_trgm_ops'},
+        postgresql_using='gin',
+    )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.execute('DROP INDEX organizations_trgm_idx ON organizations')
+    op.drop_index(
+        op.f('organizations_trgm_idx'),
+        table_name='organizations',
+        postgresql_ops={'name': 'gin_trgm_ops'},
+        postgresql_using='gin',
+    )
     op.execute('DROP EXTENSION pg_trgm')
