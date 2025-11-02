@@ -43,6 +43,13 @@ class BuildingOutNested(BaseModel):
     longitude: float
 
 
+class ActivityOutNested(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
 class OrganizationOutNested(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -77,4 +84,4 @@ class OrganizationOut(BaseModel):
     name: str
     building: 'BuildingOutNested'
     phones: Annotated[list[str], BeforeValidator(validate_phones)]
-    activities: list['ActivityOut']
+    activities: list['ActivityOutNested']

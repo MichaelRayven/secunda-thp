@@ -11,14 +11,19 @@ async def get_organization_by_id(gid: int, session: SessionDep):
     return organizations_service.get_organization_by_id(gid, session)
 
 
-@organizations_router.get('/', response_model=list[OrganizationOut])
+@organizations_router.get('/name/{name}', response_model=list[OrganizationOut])
 async def get_organization_by_name(name: str, session: SessionDep):
-    return organizations_service.get_organization_by_name(name, session)
+    return organizations_service.get_organizations_by_name(name, session)
 
 
-@organizations_router.get('/building/{gid}', response_model=list[OrganizationOut])
-async def get_organizations_by_building(gid: int, session: SessionDep):
-    return organizations_service.get_organizations_by_building(gid, session)
+@organizations_router.get('/building/{building}', response_model=list[OrganizationOut])
+async def get_organizations_by_building(building: int, session: SessionDep):
+    return organizations_service.get_organizations_by_building(building, session)
+
+
+@organizations_router.get('/activity/{activity}', response_model=list[OrganizationOut])
+async def get_organizations_by_activity(activity: int, session: SessionDep):
+    return organizations_service.get_organizations_by_activity(activity, session)
 
 
 @organizations_router.post('/', response_model=OrganizationOut)
