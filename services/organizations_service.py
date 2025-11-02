@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from models import Activity, Building, Organization, OrganizationPhone, organization_activity
 from schemas import OrganizationCreate, OrganizationOut
-from sqlalchemy import bindparam, select
+from sqlalchemy import bindparam, func, select
 from sqlalchemy.orm import Session
 
 
@@ -47,6 +47,26 @@ def get_organizations_by_activity(activity: int, session: Session) -> list[Organ
     )
 
     return session.execute(query, {'start_id': activity}).scalars().all()
+
+
+def get_organizations_by_geolocation(
+    min_lat: float,
+    min_lon: float,
+    max_lat: float,
+    max_lon: float,
+    session: Session,
+) -> list[OrganizationOut]:
+    bounding_box = func.ST_MakeEnvelope(
+        min_lon,
+        min_lat,
+        max_lon,
+        max_lat,
+        4326,
+    )
+
+    query = select(Organization).join(Building).where(Building.geolocation.intersects(bounding_box))
+
+    return session.execute(query).scalars().all()
 
 
 def create_organization(organization: OrganizationCreate, session: Session) -> OrganizationOut:

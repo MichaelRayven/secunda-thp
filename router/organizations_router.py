@@ -11,19 +11,36 @@ async def get_organization_by_id(gid: int, session: SessionDep):
     return organizations_service.get_organization_by_id(gid, session)
 
 
-@organizations_router.get('/name/{name}', response_model=list[OrganizationOut])
-async def get_organization_by_name(name: str, session: SessionDep):
-    return organizations_service.get_organizations_by_name(name, session)
+@organizations_router.get('/name', response_model=list[OrganizationOut])
+async def get_organization_by_name(q: str, session: SessionDep):
+    return organizations_service.get_organizations_by_name(q, session)
 
 
-@organizations_router.get('/building/{building}', response_model=list[OrganizationOut])
-async def get_organizations_by_building(building: int, session: SessionDep):
-    return organizations_service.get_organizations_by_building(building, session)
+@organizations_router.get('/building', response_model=list[OrganizationOut])
+async def get_organizations_by_building(q: int, session: SessionDep):
+    return organizations_service.get_organizations_by_building(q, session)
 
 
-@organizations_router.get('/activity/{activity}', response_model=list[OrganizationOut])
-async def get_organizations_by_activity(activity: int, session: SessionDep):
-    return organizations_service.get_organizations_by_activity(activity, session)
+@organizations_router.get('/activity', response_model=list[OrganizationOut])
+async def get_organizations_by_activity(q: int, session: SessionDep):
+    return organizations_service.get_organizations_by_activity(q, session)
+
+
+@organizations_router.get('/activity', response_model=list[OrganizationOut])
+async def get_organizations_by_geolocation(
+    min_lat: float,
+    min_lon: float,
+    max_lat: float,
+    max_lon: float,
+    session: SessionDep,
+):
+    return organizations_service.get_organizations_by_geolocation(
+        min_lat=min_lat,
+        min_lon=min_lon,
+        max_lat=max_lat,
+        max_lon=max_lon,
+        session=session,
+    )
 
 
 @organizations_router.post('/', response_model=OrganizationOut)
