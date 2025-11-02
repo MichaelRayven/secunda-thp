@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from models import Activity, Building, Organization, OrganizationPhone
-from schemas import BulidingOut, OrganizationCreate, OrganizationOut
+from schemas import OrganizationCreate, OrganizationOut
 from sqlalchemy.orm import Session
 
 
@@ -12,7 +12,7 @@ def get_organization_by_id(gid: int, session: Session) -> OrganizationOut:
     organization = session.query(Organization).get(gid)
     if organization is None:
         raise HTTPException(status_code=404, detail='Organization not found')
-    return OrganizationOut.model_validate(organization)
+    return organization
 
 
 def get_organization_by_name(name: str, session: Session) -> list[OrganizationOut]:
@@ -44,13 +44,4 @@ def create_organization(organization: OrganizationCreate, session: Session) -> O
     session.commit()
     session.refresh(new_organization)
 
-    return OrganizationOut(
-        id=new_organization.id,
-        name=new_organization.name,
-        building=BulidingOut(
-            id=building.id,
-            address=building.address,
-            latitude=building.latitude,
-            longitude=building.longitude,
-        ),
-    )
+    return organization
