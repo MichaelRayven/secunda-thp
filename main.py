@@ -1,6 +1,6 @@
-def main() -> None:
-    print('Hello from secunda-thp!')  # noqa: T201
+from fastapi import FastAPI
+from router.organizations_router import organizations_router
 
+app = FastAPI()
 
-if __name__ == '__main__':
-    main()
+app.include_router(organizations_router)

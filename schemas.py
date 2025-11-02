@@ -1,4 +1,23 @@
-from pydantic import BaseModel
+from typing import Annotated, Any
+
+from pydantic import BaseModel, BeforeValidator, ConfigDict
+
+
+def stringify_phone(value: Any):
+    if hasattr(value, 'phone_number'):
+        return getattr(value, 'phone_number', None)
+
+    if isinstance(value, str):
+        return value
+
+    raise ValueError('Please provide a valid phone number')
+
+
+def validate_phones(value: Any):
+    if isinstance(value, list):
+        return [stringify_phone(phone) for phone in value]
+
+    return [stringify_phone(value)]
 
 
 class OrganizationCreate(BaseModel):
@@ -15,24 +34,47 @@ class OrganizationUpdate(BaseModel):
     activities: list[int] | None = None
 
 
-class OrganizationOut(BaseModel):
-    id: int
-    name: str
-    building: 'BulidingOut'
-    phones: list[str]
-    activities: list['ActivityOut']
+class BuildingOutNested(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
-
-class ActivityOut(BaseModel):
-    id: int
-    name: str
-    children: list['ActivityOut']
-    parent: 'ActivityOut' = None
-
-
-class BulidingOut(BaseModel):
     id: int
     address: str
     latitude: float
     longitude: float
-    organizations: list['OrganizationOut']
+
+
+class OrganizationOutNested(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    phones: Annotated[list[str], BeforeValidator(validate_phones)]
+    activities: list['ActivityOut']
+
+
+class ActivityOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    children: list['ActivityOut'] = []
+
+
+class BulidingOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    address: str
+    latitude: float
+    longitude: float
+    organizations: list['OrganizationOutNested'] = []
+
+
+class OrganizationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    building: 'BuildingOutNested'
+    phones: Annotated[list[str], BeforeValidator(validate_phones)]
+    activities: list['ActivityOut']

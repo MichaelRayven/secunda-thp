@@ -12,6 +12,13 @@ def get_organization_by_id(gid: int, session: Session) -> OrganizationOut:
     organization = session.query(Organization).get(gid)
     if organization is None:
         raise HTTPException(status_code=404, detail='Organization not found')
+    return OrganizationOut.model_validate(organization)
+
+
+def get_organization_by_name(name: str, session: Session) -> list[OrganizationOut]:
+    organization = session.query(Organization).filter(Organization.name.op('%')(name)).all()
+    if organization is None:
+        raise HTTPException(status_code=404, detail='Organization not found')
     return organization
 
 

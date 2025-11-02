@@ -1,7 +1,7 @@
 import os
+from typing import Annotated
 
 from fastapi import Depends
-from pydantic import Annotated
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
