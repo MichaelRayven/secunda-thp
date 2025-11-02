@@ -85,3 +85,4 @@ inline-quotes = "single"
 lint = { cmd = "uv run prek run --all-files", help = "Run linting through pre-commit" }
 run_server = { cmd = "uv run fastapi run main.py --port 8000", help = "Run application server" }
 make_migration = { cmd = "uv run alembic revision --autogenerate -m" }
+add_test_data = { cmd = "uv run python populate_test_data.py", help = "Populate DB with test data" }
