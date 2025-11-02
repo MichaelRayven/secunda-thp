@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17
+    image: postgis/postgis:17-3.4
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -12,7 +12,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    build: ./Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - postgres
     environment:
