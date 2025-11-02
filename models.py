@@ -1,3 +1,4 @@
+from geoalchemy2 import Geography
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -18,13 +19,11 @@ class Activity(Base):
     parent: Mapped['Activity'] = relationship('Activity', remote_side=[id], backref='children')
 
 
-# Модель здания
 class Building(Base):
     __tablename__ = 'buildings'
     id: Mapped[int] = mapped_column(primary_key=True)
     address: Mapped[str] = mapped_column(String(), nullable=False)
-    latitude: Mapped[float] = mapped_column(Float(), nullable=False)
-    longitude: Mapped[float] = mapped_column(Float(), nullable=False)
+    geolocation = Column(Geography(geometry_type='POINT', srid=4326), nullable=False)
 
     organizations: Mapped[list['Organization']] = relationship(
         'Organization',
