@@ -7,8 +7,8 @@ organizations_router = APIRouter(prefix='/organizations', tags=['organizations']
 
 
 @organizations_router.get('/name', response_model=list[OrganizationOut])
-async def get_organization_by_name(q: str, session: SessionDep):
-    return organizations_service.get_organizations_by_name(q, session)
+async def get_organization_by_name(q: str, service: OrganisationService = Depends(get_organisation_service)):
+    return service.get_organizations_by_name(q)
 
 
 @organizations_router.get('/building', response_model=list[OrganizationOut])
@@ -23,10 +23,7 @@ async def get_organizations_by_activity(q: int, session: SessionDep):
 
 @organizations_router.get('/location', response_model=list[OrganizationOut])
 async def get_organizations_by_geolocation(
-    min_lon: float,
-    min_lat: float,
-    max_lon: float,
-    max_lat: float,
+    query: Annotated[Query(min_lat), GetOrganizationsByGeolocationQuery],
     session: SessionDep,
 ):
     return organizations_service.get_organizations_by_geolocation(
@@ -38,11 +35,11 @@ async def get_organizations_by_geolocation(
     )
 
 
-@organizations_router.post('/', response_model=OrganizationOut)
-async def create_organization(organization: OrganizationCreate, session: SessionDep):
+@organizations_router.post('/')
+async def create_organization(organization: OrganizationCreate, session: SessionDep) -> OrganizationOut:
     return organizations_service.create_organization(organization, session)
 
 
-@organizations_router.get('/{gid}', response_model=OrganizationOut)
-async def get_organization_by_id(gid: int, session: SessionDep):
+@organizations_router.get('/{gid}')
+async def get_organization_by_id(gid: int, session: SessionDep) -> OrganizationOut:
     return organizations_service.get_organization_by_id(gid, session)
