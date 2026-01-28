@@ -7,6 +7,21 @@ class Base(DeclarativeBase):
     pass
 
 
+# Ассоциация "организация - виды деятельности"
+class OrganizationActivityAssociation():
+    __tablename__ = 'organization_activity'
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organization.id", ondelete="CASCADE"), primary_key=True)
+    activity_id: Mapped[int] = mapped_column(ForeignKey("activity.id", ondelete="CASCADE"), primary_key=True)
+
+
+# Ассоциация "организация-телефоны"
+class OrganizationPhone(Base):
+    __tablename__ = 'organization_phones'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    organization_id: Mapped[int] = mapped_column(ForeignKey('organizations.id', ondelete='CASCADE'))
+    phone_number: Mapped[str] = mapped_column(String(), nullable=False)
+
+
 class Activity(Base):
     __tablename__ = 'activities'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -31,34 +46,6 @@ class Building(Base):
     )
 
 
-# Ассоциация "организация-виды деятельности"
-organization_activity = Table(
-    'organization_activity',
-    Base.metadata,
-    Column(
-        'organization_id',
-        Integer,
-        ForeignKey('organizations.id', ondelete='CASCADE'),
-        primary_key=True,
-    ),
-    Column(
-        'activity_id',
-        Integer,
-        ForeignKey('activities.id', ondelete='CASCADE'),
-        primary_key=True,
-    ),
-)
-
-
-# Ассоциация "организация-телефоны"
-class OrganizationPhone(Base):
-    __tablename__ = 'organization_phones'
-    id: Mapped[int] = mapped_column(primary_key=True)
-    organization_id: Mapped[int] = mapped_column(ForeignKey('organizations.id', ondelete='CASCADE'))
-    phone_number: Mapped[str] = mapped_column(String(), nullable=False)
-
-
-# Модель организации
 class Organization(Base):
     __tablename__ = 'organizations'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -75,6 +62,6 @@ class Organization(Base):
     )
     activities: Mapped[list['Activity']] = relationship(
         'Activity',
-        secondary=organization_activity,
+        secondary=OrganizationActivityAssociation,
         backref='organizations',
     )

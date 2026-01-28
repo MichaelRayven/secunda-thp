@@ -2,7 +2,7 @@ from typing import Annotated, Any
 
 from geoalchemy2 import WKBElement
 from geoalchemy2.shape import to_shape
-from pydantic import BaseModel, BeforeValidator, ConfigDict
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 from shapely.geometry.base import BaseGeometry
 
 
@@ -30,7 +30,7 @@ def wkb_to_shape(wkb: WKBElement | BaseGeometry) -> BaseGeometry | None:
     return wkb
 
 
-def dump_geom(value: Any) -> dict:
+def dump_geom(value: Any):
     if isinstance(value, dict):
         return value
     return getattr(wkb_to_shape(value), '__geo_interface__', None)
@@ -99,3 +99,9 @@ class OrganizationOut(BaseModel):
     building: 'BuildingOutNested'
     phones: Annotated[list[str], BeforeValidator(validate_phones)]
     activities: list['ActivityOutNested']
+
+class GeolocationQuery(BaseModel):
+    min_lat: float
+    min_lon: float
+    max_lat: float
+    max_lon: float

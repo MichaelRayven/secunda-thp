@@ -6,7 +6,7 @@ Create Date: 2025-11-03 01:33:58.018837
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
 import geoalchemy2
 import sqlalchemy as sa
@@ -14,9 +14,9 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = 'ecc0565595c0'
-down_revision: Union[str, Sequence[str], None] = 'b050606c1614'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = 'b050606c1614'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -52,7 +52,9 @@ def upgrade() -> None:
     op.drop_column('buildings', 'longitude')
 
     op.drop_constraint(
-        op.f('organization_activity_activity_id_fkey'), 'organization_activity', type_='foreignkey'
+        op.f('organization_activity_activity_id_fkey'),
+        'organization_activity',
+        type_='foreignkey',
     )
     op.drop_constraint(
         op.f('organization_activity_organization_id_fkey'),
@@ -68,7 +70,12 @@ def upgrade() -> None:
         ondelete='CASCADE',
     )
     op.create_foreign_key(
-        None, 'organization_activity', 'activities', ['activity_id'], ['id'], ondelete='CASCADE'
+        None,
+        'organization_activity',
+        'activities',
+        ['activity_id'],
+        ['id'],
+        ondelete='CASCADE',
     )
     # ### end Alembic commands ###
 
@@ -95,13 +102,19 @@ def downgrade() -> None:
     op.add_column(
         'buildings',
         sa.Column(
-            'longitude', sa.DOUBLE_PRECISION(precision=53), autoincrement=False, nullable=False
+            'longitude',
+            sa.DOUBLE_PRECISION(precision=53),
+            autoincrement=False,
+            nullable=False,
         ),
     )
     op.add_column(
         'buildings',
         sa.Column(
-            'latitude', sa.DOUBLE_PRECISION(precision=53), autoincrement=False, nullable=False
+            'latitude',
+            sa.DOUBLE_PRECISION(precision=53),
+            autoincrement=False,
+            nullable=False,
         ),
     )
     op.drop_index('idx_buildings_geolocation', table_name='buildings', postgresql_using='gist')
