@@ -13,13 +13,19 @@ dependencies = [
     "shapely>=2.1.2",
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app", "src/tests"]
+
 [dependency-groups]
 dev = [
     "poethepoet>=0.37.0",
     "prek>=0.2.11",
     "ruff>=0.14.2",
 ]
-
 
 [tool.ruff]
 src = ["src"]
@@ -83,6 +89,6 @@ inline-quotes = "single"
 
 [tool.poe.tasks]
 lint = { cmd = "uv run prek run --all-files", help = "Run linting through pre-commit" }
-run_server = { cmd = "uv run fastapi run main.py --port 8000", help = "Run application server" }
+run_server = { cmd = "uv run fastapi run src/app/main.py --port 8000", help = "Run application server" }
 make_migration = { cmd = "uv run alembic revision --autogenerate -m", help = "Generate a new migration" }
 migrate = { cmd = "uv run alembic upgrade head", help = "Applies the latest migration" }

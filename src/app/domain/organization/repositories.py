@@ -1,24 +1,30 @@
-from app.common.exceptions import ModelNotFoundError
-from app.domain.Organization.models import Organization, Activity, organization_activity, Building, OrganizationPhone
-from sqlalchemy.orm import Session
 from sqlalchemy import bindparam, func, select
+from sqlalchemy.orm import Session
 
-from app.domain.Organization.schemas import OrganizationCreate
+from app.common.exceptions import ModelNotFoundError
+from app.domain.organization.models import (
+    Activity,
+    Building,
+    Organization,
+    OrganizationPhone,
+    activity_organization_association,
+)
+from app.domain.organization.schemas import OrganizationCreate
 
 
 class OrganizationRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
-    
+
     def get_organizations_by_building(self, building: int) -> list[Organization]:
         return self.session.query(Organization).filter(Organization.building_id == building).all()
-    
+
     def get_organization_by_id(self, gid: int) -> Organization | None:
         return self.session.query(Organization).get(gid)
-    
+
     def get_organizations_by_name(self, name: str) -> list[Organization]:
         return self.session.query(Organization).filter(Organization.name.op('%')(name)).all()
-    
+
     def get_organizations_by_activity(self, activity: int) -> list[Organization]:
         activity_children = (
             select(Activity)
@@ -35,9 +41,9 @@ class OrganizationRepository:
 
         query = (
             select(Organization)
-            .join(organization_activity)
+            .join(activity_organization_association)
             .where(
-                organization_activity.c.activity_id.in_(select(activity_children.c.id)),
+                activity_organization_association.c.activity_id.in_(select(activity_children.c.id)),
             )
             .distinct()
         )
@@ -46,7 +52,7 @@ class OrganizationRepository:
         return list(result)
 
     def get_organizations_by_geolocation(
-        self, 
+        self,
         min_lat: float,
         min_lon: float,
         max_lat: float,
@@ -60,17 +66,23 @@ class OrganizationRepository:
             4326,
         )
 
-        query = select(Organization).join(Building).where(Building.geolocation.intersects(bounding_box))
+        query = (
+            select(Organization).join(Building).where(Building.geolocation.intersects(bounding_box))
+        )
         result = self.session.execute(query).scalars().all()
         return list(result)
-    
+
     def create_organization(self, organization: OrganizationCreate) -> Organization:
         # Проверяем, существование здания и активностей
-        building = self.session.query(Building).filter(Building.id == organization.building_id).first()
+        building = (
+            self.session.query(Building).filter(Building.id == organization.building_id).first()
+        )
         if not building:
             raise ModelNotFoundError(message='Building not found')
 
-        activities = self.session.query(Activity).filter(Activity.id.in_(organization.activities)).all()
+        activities = (
+            self.session.query(Activity).filter(Activity.id.in_(organization.activities)).all()
+        )
         if len(activities) != len(organization.activities):
             raise ModelNotFoundError(message='One or more activities not found')
 

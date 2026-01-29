@@ -2,7 +2,7 @@ from typing import Annotated, Any
 
 from geoalchemy2 import WKBElement
 from geoalchemy2.shape import to_shape
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict
 from shapely.geometry.base import BaseGeometry
 
 
@@ -99,6 +99,7 @@ class OrganizationOut(BaseModel):
     building: 'BuildingOutNested'
     phones: Annotated[list[str], BeforeValidator(validate_phones)]
     activities: list['ActivityOutNested']
+
 
 class GeolocationQuery(BaseModel):
     min_lat: float

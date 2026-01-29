@@ -1,5 +1,5 @@
 from geoalchemy2 import Geography
-from sqlalchemy import Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, ForeignKey, String, Table
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -7,11 +7,12 @@ class Base(DeclarativeBase):
     pass
 
 
-# Ассоциация "организация - виды деятельности"
-class OrganizationActivityAssociation():
-    __tablename__ = 'organization_activity'
-    organization_id: Mapped[int] = mapped_column(ForeignKey("organization.id", ondelete="CASCADE"), primary_key=True)
-    activity_id: Mapped[int] = mapped_column(ForeignKey("activity.id", ondelete="CASCADE"), primary_key=True)
+activity_organization_association = Table(
+    'organization_activity',
+    Base.metadata,
+    Column('organization_id', ForeignKey('organization.id'), primary_key=True),
+    Column('activity_id', ForeignKey('activity.id'), primary_key=True),
+)
 
 
 # Ассоциация "организация-телефоны"
@@ -62,6 +63,6 @@ class Organization(Base):
     )
     activities: Mapped[list['Activity']] = relationship(
         'Activity',
-        secondary=OrganizationActivityAssociation,
+        secondary=activity_organization_association,
         backref='organizations',
     )

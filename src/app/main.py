@@ -1,13 +1,14 @@
-from fastapi import FastAPI
-from router.organizations_router import organizations_router
 import uvicorn
+from fastapi import FastAPI
+
+from app.api.routes.organisation import organization_router
 
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(organizations_router)
+    app.include_router(organization_router)
     return app
 
 
 if __name__ == '__main__':
-    uvicorn.run(factory=create_app, host='0.0.0.0', port=8000)
+    uvicorn.run(app=create_app(), port=8000)

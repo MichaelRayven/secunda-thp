@@ -1,45 +1,63 @@
 from typing import Annotated
-from common.di.services import get_organization_service
+
 from fastapi import APIRouter, Depends, Query
-from domain.organization.schemas import GeolocationQuery, OrganizationCreate, OrganizationOut
-from domain.organization.services import OrganisationService
 
-organizations_router = APIRouter(prefix='/organizations', tags=['organizations'])
+from app.common.di.services import get_organisation_service
+from app.domain.organization.models import Organization
+from app.domain.organization.schemas import GeolocationQuery, OrganizationCreate, OrganizationOut
+from app.domain.organization.services import OrganizationService
+
+organization_router = APIRouter(prefix='/organizations', tags=['organizations'])
 
 
-@organizations_router.get('/name')
-async def get_organization_by_name(q: str, service: OrganisationService = Depends(get_organisation_service)) -> list[OrganizationOut]:
+@organization_router.get('/name', response_model=list[OrganizationOut])
+async def get_organization_by_name(
+    q: str,
+    service: Annotated[OrganizationService, Depends(get_organisation_service)],
+) -> list[Organization]:
     return service.get_organizations_by_name(q)
 
 
-@organizations_router.get('/building')
-async def get_organizations_by_building(q: int, service: OrganisationService = Depends(get_organisation_service)) -> list[OrganizationOut]:
+@organization_router.get('/building', response_model=list[OrganizationOut])
+async def get_organizations_by_building(
+    q: int,
+    service: Annotated[OrganizationService, Depends(get_organisation_service)],
+) -> list[Organization]:
     return service.get_organizations_by_building(q)
 
 
-@organizations_router.get('/activity')
-async def get_organizations_by_activity(q: int, service: OrganisationService = Depends(get_organisation_service)) -> list[OrganizationOut]:
+@organization_router.get('/activity', response_model=list[OrganizationOut])
+async def get_organizations_by_activity(
+    q: int,
+    service: Annotated[OrganizationService, Depends(get_organisation_service)],
+) -> list[Organization]:
     return service.get_organizations_by_activity(q)
 
 
-@organizations_router.get('/location')
+@organization_router.get('/location', response_model=list[OrganizationOut])
 async def get_organizations_by_geolocation(
     query: Annotated[GeolocationQuery, Query()],
-    service: OrganisationService = Depends(get_organisation_service)
-) -> list[OrganizationOut]:
+    service: Annotated[OrganizationService, Depends(get_organisation_service)],
+) -> list[Organization]:
     return service.get_organizations_by_geolocation(
-        min_lat=min_lat,
-        min_lon=min_lon,
-        max_lat=max_lat,
-        max_lon=max_lon
+        min_lat=query.min_lat,
+        min_lon=query.min_lon,
+        max_lat=query.max_lat,
+        max_lon=query.max_lon,
     )
 
 
-@organizations_router.post('/')
-async def create_organization(organization: OrganizationCreate, service: OrganisationService = Depends(get_organisation_service)) -> OrganizationOut:
+@organization_router.post('/', response_model=OrganizationOut)
+async def create_organization(
+    organization: OrganizationCreate,
+    service: Annotated[OrganizationService, Depends(get_organisation_service)],
+) -> Organization:
     return service.create_organization(organization)
 
 
-@organizations_router.get('/{gid}')
-async def get_organization_by_id(gid: int, service: OrganisationService = Depends(get_organisation_service)) -> OrganizationOut:
+@organization_router.get('/{gid}', response_model=OrganizationOut)
+async def get_organization_by_id(
+    gid: int,
+    service: Annotated[OrganizationService, Depends(get_organisation_service)],
+) -> Organization:
     return service.get_organization_by_id(gid)

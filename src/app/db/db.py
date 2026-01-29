@@ -6,16 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 engine = create_engine(
-    os.environ.get('DATABASE_URL'),
+    os.environ.get('DATABASE_URL'), # type: ignore
     execution_options={
         'isolation_level': 'REPEATABLE READ',
     },
 )
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-
-SessionDep = Annotated[Session, Depends(get_session)]
