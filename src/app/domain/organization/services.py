@@ -1,8 +1,8 @@
 from fastapi import HTTPException
-from models import Organization
-from schemas import OrganizationCreate
 
+from app.db.models import Organization
 from app.domain.organization.repositories import OrganizationRepository
+from app.domain.organization.schemas import OrganizationCreate
 
 
 class OrganizationService:

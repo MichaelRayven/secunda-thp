@@ -2,7 +2,7 @@ from sqlalchemy import bindparam, func, select
 from sqlalchemy.orm import Session
 
 from app.common.exceptions import ModelNotFoundError
-from app.domain.organization.models import (
+from app.db.models import (
     Activity,
     Building,
     Organization,
