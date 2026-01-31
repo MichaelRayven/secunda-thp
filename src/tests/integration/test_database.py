@@ -1,10 +1,12 @@
 import pytest
 from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
-def test_database_tables_exist(db_session: Session):
-    result = db_session.execute(
+@pytest.mark.asyncio
+async def test_database_tables_exist(db_session: AsyncSession):
+    """Проверяет наличие всех необходимых таблиц в базе данных."""
+    result = await db_session.execute(
         text("""
             SELECT table_name 
             FROM information_schema.tables 
@@ -29,8 +31,10 @@ def test_database_tables_exist(db_session: Session):
     print(f"✅ Все таблицы найдены: {tables}")
 
 
-def test_alembic_version_exists(db_session: Session):
-    result = db_session.execute(
+@pytest.mark.asyncio
+async def test_alembic_version_exists(db_session: AsyncSession):
+    """Проверяет наличие версии Alembic в базе данных."""
+    result = await db_session.execute(
         text("SELECT version_num FROM alembic_version")
     )
     version = result.scalar()

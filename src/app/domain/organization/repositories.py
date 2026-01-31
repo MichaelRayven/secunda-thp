@@ -11,23 +11,23 @@ class IOrganizationRepository(ABC):
         self.session = session
 
     @abstractmethod
-    def get_organizations_by_building(self, building: int) -> list[Organization]:
+    async def get_organizations_by_building(self, building: int) -> list[Organization]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_organization_by_id(self, gid: int) -> Organization:
+    async def get_organization_by_id(self, gid: int) -> Organization:
         raise NotImplementedError
 
     @abstractmethod
-    def get_organizations_by_name(self, name: str) -> list[Organization]:
+    async def get_organizations_by_name(self, name: str) -> list[Organization]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_organizations_by_activity(self, activity: int) -> list[Organization]:
+    async def get_organizations_by_activity(self, activity: int) -> list[Organization]:
         raise NotImplementedError
 
     @abstractmethod
-    def get_organizations_by_geolocation(
+    async def get_organizations_by_geolocation(
         self,
         min_lat: float,
         min_lon: float,
@@ -37,5 +37,5 @@ class IOrganizationRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def create_organization(self, organization: OrganizationCreate) -> Organization:
+    async def create_organization(self, organization: OrganizationCreate) -> Organization:
         raise NotImplementedError

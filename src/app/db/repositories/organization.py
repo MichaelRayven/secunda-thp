@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import bindparam, func, select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.common.exceptions import ModelNotFoundError
 from app.db.models import (
@@ -27,25 +28,12 @@ if TYPE_CHECKING:
 
 
 class SQLAlchemyOrganizationRepository(IOrganizationRepository):
-    def __init__(self, session: Session) -> None:
+    TEXT_SIMILARITY = 0.2
+
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    def get_organizations_by_building(self, building: int) -> list[Organization]:
-        result = (
-            self.session.query(OrganizationModel)
-            .filter(OrganizationModel.building_id == building)
-            .all()
-        )
-        return [self._to_domain(entity) for entity in result]
-
-    def get_organization_by_id(self, gid: int) -> Organization:
-        result = self.session.get(OrganizationModel, gid)
-        if not result:
-            msg = f"Organization id={gid} doesn't exist"
-            raise ModelNotFoundError(msg)
-        return self._to_domain(result)
-
-    def get_organizations_by_name(self, name: str) -> list[Organization]:
+    async def get_organizations_by_building(self, building: int) -> list[Organization]:
         query = (
             select(OrganizationModel)
             .options(
@@ -53,19 +41,52 @@ class SQLAlchemyOrganizationRepository(IOrganizationRepository):
                 selectinload(OrganizationModel.phones),
                 selectinload(OrganizationModel.activities),
             )
+            .where(OrganizationModel.building_id == building)
+        )
+        result = await self.session.execute(query)
+        entities = result.scalars().all()
+        return [self._to_domain(entity) for entity in entities]
+
+    async def get_organization_by_id(self, gid: int) -> Organization:
+        query = (
+            select(OrganizationModel)
+            .options(
+                selectinload(OrganizationModel.building),
+                selectinload(OrganizationModel.phones),
+                selectinload(OrganizationModel.activities),
+            )
+            .where(OrganizationModel.id == gid)
+        )
+        result = await self.session.execute(query)
+        model = result.scalar_one_or_none()
+
+        if not model:
+            msg = f"Organization id={gid} doesn't exist"
+            raise ModelNotFoundError(msg)
+
+        return self._to_domain(model)
+
+    async def get_organizations_by_name(self, name: str) -> list[Organization]:
+        query = select(OrganizationModel).options(
+            selectinload(OrganizationModel.building),
+            selectinload(OrganizationModel.phones),
+            selectinload(OrganizationModel.activities),
         )
 
         if name and name.strip():
-            query = query.where(func.similarity(OrganizationModel.name, name) > 0.2).order_by(
+            query = query.where(
+                func.similarity(OrganizationModel.name, name) > self.TEXT_SIMILARITY
+            ).order_by(
                 func.similarity(OrganizationModel.name, name).desc(),
             )
 
         query = query.limit(100)
 
-        result = self.session.execute(query).scalars().all()
-        return [self._to_domain(entity) for entity in result]
+        result = await self.session.execute(query)
+        entities = result.scalars().all()
+        return [self._to_domain(entity) for entity in entities]
 
-    def get_organizations_by_activity(self, activity: int) -> list[Organization]:
+    async def get_organizations_by_activity(self, activity: int) -> list[Organization]:
         activity_children = (
             select(ActivityModel)
             .where(ActivityModel.id == bindparam('start_id'))
@@ -81,6 +102,11 @@ class SQLAlchemyOrganizationRepository(IOrganizationRepository):
 
         query = (
             select(OrganizationModel)
+            .options(
+                selectinload(OrganizationModel.building),
+                selectinload(OrganizationModel.phones),
+                selectinload(OrganizationModel.activities),
+            )
             .join(activity_organization_association)
             .where(
                 activity_organization_association.c.activity_id.in_(select(activity_children.c.id)),
@@ -88,10 +114,11 @@ class SQLAlchemyOrganizationRepository(IOrganizationRepository):
             .distinct()
         )
 
-        result = self.session.execute(query, {'start_id': activity}).scalars().all()
-        return [self._to_domain(entity) for entity in result]
+        result = await self.session.execute(query, {'start_id': activity})
+        entities = result.scalars().all()
+        return [self._to_domain(entity) for entity in entities]
 
-    def get_organizations_by_geolocation(
+    async def get_organizations_by_geolocation(
         self,
         min_lat: float,
         min_lon: float,
@@ -108,41 +135,48 @@ class SQLAlchemyOrganizationRepository(IOrganizationRepository):
 
         query = (
             select(OrganizationModel)
+            .options(
+                selectinload(OrganizationModel.building),
+                selectinload(OrganizationModel.phones),
+                selectinload(OrganizationModel.activities),
+            )
             .join(BuildingModel)
             .where(BuildingModel.geolocation.intersects(bounding_box))
         )
-        result = self.session.execute(query).scalars().all()
-        return [self._to_domain(entity) for entity in result]
+        result = await self.session.execute(query)
+        entities = result.scalars().all()
+        return [self._to_domain(entity) for entity in entities]
 
-    def create_organization(self, organization: OrganizationCreate) -> Organization:
-        # Проверяем, существование здания и активностей
-        building = (
-            self.session.query(BuildingModel)
-            .filter(BuildingModel.id == organization.building_id)
-            .first()
-        )
+    async def create_organization(self, organization: OrganizationCreate) -> Organization:
+        # Проверяем существование здания
+        building_query = select(BuildingModel).where(BuildingModel.id == organization.building_id)
+        building_result = await self.session.execute(building_query)
+        building = building_result.scalar_one_or_none()
+
         if not building:
             raise ModelNotFoundError(message='Building not found')
 
-        activities = (
-            self.session.query(ActivityModel)
-            .filter(ActivityModel.id.in_(organization.activities))
-            .all()
+        # Проверяем существование активностей
+        activities_query = select(ActivityModel).where(
+            ActivityModel.id.in_(organization.activities)
         )
+        activities_result = await self.session.execute(activities_query)
+        activities = activities_result.scalars().all()
+
         if len(activities) != len(organization.activities):
             raise ModelNotFoundError(message='One or more activities not found')
 
         # Создаем организацию
         new_organization = OrganizationModel(name=organization.name)
         new_organization.building = building
-        new_organization.activities = activities
+        new_organization.activities = list(activities)
         new_organization.phones = [
             OrganizationPhone(phone_number=phone) for phone in organization.phones
         ]
 
         self.session.add(new_organization)
-        self.session.commit()
-        self.session.refresh(new_organization)
+        await self.session.commit()
+        await self.session.refresh(new_organization, ['building', 'phones', 'activities'])
 
         return self._to_domain(new_organization)
 

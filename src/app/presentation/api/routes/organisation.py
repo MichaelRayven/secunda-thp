@@ -15,7 +15,7 @@ async def get_organization_by_name(
     q: str,
     service: Annotated[OrganizationService, Depends(get_organisation_service)],
 ) -> list[Organization]:
-    return service.get_organizations_by_name(q)
+    return await service.get_organizations_by_name(q)
 
 
 @organization_router.get('/building', response_model=list[OrganizationOut])
@@ -23,7 +23,7 @@ async def get_organizations_by_building(
     q: int,
     service: Annotated[OrganizationService, Depends(get_organisation_service)],
 ) -> list[Organization]:
-    return service.get_organizations_by_building(q)
+    return await service.get_organizations_by_building(q)
 
 
 @organization_router.get('/activity', response_model=list[OrganizationOut])
@@ -31,7 +31,7 @@ async def get_organizations_by_activity(
     q: int,
     service: Annotated[OrganizationService, Depends(get_organisation_service)],
 ) -> list[Organization]:
-    return service.get_organizations_by_activity(q)
+    return await service.get_organizations_by_activity(q)
 
 
 @organization_router.get('/location', response_model=list[OrganizationOut])
@@ -39,7 +39,7 @@ async def get_organizations_by_geolocation(
     query: Annotated[GeolocationQuery, Query()],
     service: Annotated[OrganizationService, Depends(get_organisation_service)],
 ) -> list[Organization]:
-    return service.get_organizations_by_geolocation(
+    return await service.get_organizations_by_geolocation(
         min_lat=query.min_lat,
         min_lon=query.min_lon,
         max_lat=query.max_lat,
@@ -52,7 +52,7 @@ async def create_organization(
     organization: OrganizationCreate,
     service: Annotated[OrganizationService, Depends(get_organisation_service)],
 ) -> Organization:
-    return service.create_organization(organization)
+    return await service.create_organization(organization)
 
 
 @organization_router.get('/{gid}', response_model=OrganizationOut)
@@ -60,4 +60,4 @@ async def get_organization_by_id(
     gid: int,
     service: Annotated[OrganizationService, Depends(get_organisation_service)],
 ) -> Organization:
-    return service.get_organization_by_id(gid)
+    return await service.get_organization_by_id(gid)

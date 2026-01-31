@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 from alembic import context
 
-from app.db.db import engine
+from app.db.db import sync_engine as engine
 from app.db.models import Base
 
 # this is the Alembic Config object, which provides
