@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 
 from app.common.di.services import get_organisation_service
-from app.domain.organization.models import Organization
+from app.domain.organization.entities import Organization
 from app.domain.organization.schemas import GeolocationQuery, OrganizationCreate, OrganizationOut
 from app.domain.organization.services import OrganizationService
 

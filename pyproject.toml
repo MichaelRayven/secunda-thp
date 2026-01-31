@@ -10,6 +10,7 @@ dependencies = [
     "geoalchemy2>=0.18.0",
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.3",
+    "pytest>=9.0.2",
     "shapely>=2.1.2",
 ]
 
@@ -69,6 +70,7 @@ known-first-party = ["src"]
    "INP001",  # is part of an implicit namespace package
    "PLC0415", # import should be at the top-level of a file
 ]
+"**/{tests,docs,tools}/*" = ["E402", "S101"]
 
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]

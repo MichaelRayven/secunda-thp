@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app.api.routes.organisation import organization_router
+from app.presentation.api.routes.organisation import organization_router
 
 
 def create_app() -> FastAPI:

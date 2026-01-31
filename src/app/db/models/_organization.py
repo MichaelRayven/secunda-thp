@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 activity_organization_association = Table(
     'organization_activity',
     Base.metadata,
-    Column('organization_id', ForeignKey('organization.id'), primary_key=True),
-    Column('activity_id', ForeignKey('activity.id'), primary_key=True),
+    Column('organization_id', ForeignKey('organizations.id'), primary_key=True),
+    Column('activity_id', ForeignKey('activities.id'), primary_key=True),
 )
 
 

@@ -11,6 +11,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  test-postgres:
+    image: postgis/postgis:17-3.4
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: test_secunda_thp
+    ports:
+      - "5433:5432"
+
   api:
     build:
       context: .

@@ -1,16 +1,30 @@
 from typing import Annotated
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
 
 from app.utils.geo import dump_geom
 from app.utils.phone import validate_phones
 
 
 class OrganizationCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=255)
     building_id: int
     phones: list[str]
     activities: list[int]
+
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        """Валидация имени организации"""
+        v = v.strip()
+
+        if not v:
+            raise ValueError('Organization name cannot be empty or whitespace')
+
+        if len(v) < 1:
+            raise ValueError('Organization name must be at least 1 characters')
+
+        return v
 
 
 class OrganizationUpdate(BaseModel):

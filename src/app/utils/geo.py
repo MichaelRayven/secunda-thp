@@ -5,11 +5,14 @@ from geoalchemy2.shape import to_shape
 from shapely.geometry.base import BaseGeometry
 
 
-def wkb_to_shape(wkb: WKBElement | BaseGeometry) -> BaseGeometry | None:
+def wkb_to_shape(wkb: WKBElement | BaseGeometry) -> BaseGeometry:
+    if wkb is None:
+        raise ValueError('WKBElement cannot be None')
+
     if isinstance(wkb, WKBElement):
         return to_shape(wkb)
 
-    return wkb
+    raise ValueError('Argument must be a WKBElement')
 
 
 def dump_geom(value: Any):
