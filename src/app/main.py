@@ -9,6 +9,7 @@ def create_app() -> FastAPI:
     app.include_router(organization_router)
     return app
 
+app = create_app()
 
 if __name__ == '__main__':
-    uvicorn.run(app=create_app(), port=8000)
+    uvicorn.run(app=app, port=8000)

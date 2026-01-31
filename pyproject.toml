@@ -99,6 +99,6 @@ asyncio_mode = "auto"
 [tool.poe.tasks]
 lint = { cmd = "uv run prek run --all-files", help = "Run linting through pre-commit" }
 test = { cmd = "uv run pytest", help = "Run tests" }
-run_server = { cmd = "uv run fastapi run src/app/main.py --port 8000", help = "Run application server" }
+run_server = { cmd = "uv run fastapi run src/app/main.py --port 8000", help = "Run application server", envfile = ".env" }
 make_migration = { cmd = "uv run alembic revision --autogenerate -m", help = "Generate a new migration" }
 migrate = { cmd = "uv run alembic upgrade head", help = "Applies the latest migration", envfile = ".env" }
