@@ -6,12 +6,22 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "alembic>=1.17.0",
+    "asyncpg>=0.31.0",
     "fastapi[standard]>=0.120.0",
     "geoalchemy2>=0.18.0",
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.3",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
     "shapely>=2.1.2",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app", "src/tests"]
 
 [dependency-groups]
 dev = [
@@ -19,7 +29,6 @@ dev = [
     "prek>=0.2.11",
     "ruff>=0.14.2",
 ]
-
 
 [tool.ruff]
 src = ["src"]
@@ -63,6 +72,7 @@ known-first-party = ["src"]
    "INP001",  # is part of an implicit namespace package
    "PLC0415", # import should be at the top-level of a file
 ]
+"**/{tests,docs,tools}/*" = ["E402", "S101"]
 
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
@@ -81,9 +91,14 @@ inline-quotes = "single"
 
 
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+
+
 [tool.poe.tasks]
 lint = { cmd = "uv run prek run --all-files", help = "Run linting through pre-commit" }
-run_server = { cmd = "uv run fastapi run main.py --port 8000", help = "Run application server" }
+test = { cmd = "uv run pytest", help = "Run tests" }
+run_server = { cmd = "uv run fastapi run src/app/main.py --port 8000", help = "Run application server", envfile = ".env" }
 make_migration = { cmd = "uv run alembic revision --autogenerate -m", help = "Generate a new migration" }
-migrate = { cmd = "uv run alembic upgrade head", help = "Applies the latest migration" }
-add_test_data = { cmd = "uv run python populate_test_data.py", help = "Populate DB with test data" }
+migrate = { cmd = "uv run alembic upgrade head", help = "Applies the latest migration", envfile = ".env" }
